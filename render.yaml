@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: ai-company-001-v051
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m agent_company
