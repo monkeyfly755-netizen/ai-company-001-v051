@@ -1,10 +1,9 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>AI Company 001</title></head>
+<html><head><meta charset='utf-8'><title>AI Company 001</title></head>
 <body>
 <h1>AI Company 001 v0.5.1</h1>
 <h2>运行模式：SIMULATION</h2>
-<button onclick="start()">让CEO开始工作</button>
+<button onclick='start()'>让CEO开始工作</button>
 <h2>AI员工</h2>
 <ul>
 <li>CEO READY</li>
@@ -13,17 +12,10 @@
 <li>Marketing WAITING</li>
 </ul>
 <h2>公司动态</h2>
-<div id="log">等待执行</div>
+<div id='log'>等待执行</div>
 <script>
-function start(){
-fetch('/api/start',{method:'POST'}).then(()=>load());
-}
-function load(){
-fetch('/api/dashboard').then(r=>r.json()).then(d=>{
-document.getElementById('log').innerHTML=d.activities.join('<br>');
-});
-}
-load();
+function start(){fetch('/api/start',{method:'POST'}).then(load)}
+function load(){fetch('/api/dashboard').then(r=>r.json()).then(d=>document.getElementById('log').innerHTML=d.activities.join('<br>'))}
+load()
 </script>
-</body>
-</html>
+</body></html>
