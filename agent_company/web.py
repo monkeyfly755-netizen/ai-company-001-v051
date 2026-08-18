@@ -1,41 +1,34 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler,HTTPServer
 from pathlib import Path
 import json
-from .company import start_company_task
+from .workflow import start_workflow,state
 from .db import get_activities
 
 class Handler(BaseHTTPRequestHandler):
-    def reply(self, text, ctype='text/html'):
-        data = text.encode('utf-8')
+    def send(self,data,ctype='text/html'):
+        b=data.encode('utf-8')
         self.send_response(200)
-        self.send_header('Content-Type', ctype + '; charset=utf-8')
-        self.send_header('Content-Length', str(len(data)))
+        self.send_header('Content-Type',ctype+';charset=utf-8')
+        self.send_header('Content-Length',str(len(b)))
         self.end_headers()
-        self.wfile.write(data)
+        self.wfile.write(b)
 
     def do_GET(self):
-        if self.path == '/api/dashboard':
-            data = {
-                'mode':'SIMULATION',
-                'agents': {
-                    'CEO':'READY',
-                    'Research':'WAITING',
-                    'Developer':'WAITING',
-                    'Marketing':'WAITING'
-                },
-                'activities':[x[0] for x in get_activities()]
-            }
-            self.reply(json.dumps(data, ensure_ascii=False), 'application/json')
+        if self.path=='/api/dashboard':
+            self.send(json.dumps({
+                'agents':state,
+                'activities':get_activities()
+            },ensure_ascii=False),'application/json')
         else:
-            html = Path(__file__).parent / 'web' / 'index.html'
-            self.reply(html.read_text(encoding='utf-8'))
+            self.send((Path(__file__).parent/'web'/'index.html').read_text(encoding='utf-8'))
 
     def do_POST(self):
-        if self.path == '/api/start':
-            start_company_task()
-            self.reply(json.dumps({'status':'started'}), 'application/json')
+        if self.path=='/api/start':
+            length=int(self.headers.get('Content-Length',0))
+            body=self.rfile.read(length).decode('utf-8')
+            goal=json.loads(body).get('goal','测试任务')
+            start_workflow(goal)
+            self.send(json.dumps({'status':'started'}),'application/json')
 
 def serve():
-    server = HTTPServer(('0.0.0.0', 10000), Handler)
-    print('AI Company 001 running')
-    server.serve_forever()
+    HTTPServer(('0.0.0.0',10000),Handler).serve_forever()
